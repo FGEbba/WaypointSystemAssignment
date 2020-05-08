@@ -2,11 +2,42 @@
 using UnityEditor;
 using UnityEngine;
 
+
 public class Linedrawer : MonoBehaviour
 {
 
     public static List<GameObject> points { get; private set; }
     public static int amountOfNodes { get; private set; }
+
+    private void Awake()
+    {
+        List<GameObject> objectsInScene = new List<GameObject>();
+
+        Setup();
+
+        foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
+        {
+            if (go.hideFlags != HideFlags.None)
+                continue;
+            if (PrefabUtility.GetPrefabType(go) == PrefabType.Prefab || PrefabUtility.GetPrefabType(go) == PrefabType.ModelPrefab)
+                continue;
+
+            objectsInScene.Add(go);
+        }
+
+        foreach (GameObject go in objectsInScene)
+        {
+            if (go.GetComponent<WaypointThing>() && !points.Contains(go))
+            {
+                Linedrawer.AddPoint(go);
+            }
+        }
+
+        Linedrawer.points.Sort(Linedrawer.SortByName);
+
+    }
+
+
 
     public static void Setup()
     {
@@ -41,7 +72,7 @@ public class Linedrawer : MonoBehaviour
     private void OnDrawGizmos()
     {
         if (points.Count > 0)
-            {
+        {
 
             Vector3[] lineSegments = new Vector3[points.Count * 2];
             int lastObject = points.Count - 1;

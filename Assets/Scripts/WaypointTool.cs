@@ -13,7 +13,6 @@ public class WaypointTool : EditorWindow
 
     private SerializedObject serializedObject;
 
-
     [MenuItem("Tools/Waypoint Tool")]
     public static void ShowWindow() => GetWindow<WaypointTool>("Waypoint Tool");
 
@@ -25,32 +24,6 @@ public class WaypointTool : EditorWindow
 
         //Apply them to this window
         JsonUtility.FromJsonOverwrite(data, this);
-
-        Linedrawer.Setup();
-
-        List<GameObject> objectsInScene = new List<GameObject>();
-
-        foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
-        {
-            if (go.hideFlags != HideFlags.None)
-                continue;
-            if (PrefabUtility.GetPrefabType(go) == PrefabType.Prefab || PrefabUtility.GetPrefabType(go) == PrefabType.ModelPrefab)
-                continue;
-
-            objectsInScene.Add(go);
-        }
-
-        foreach (GameObject go in objectsInScene)
-        {
-            if (go.GetComponent<WaypointThing>() && !Linedrawer.points.Contains(go))
-            {
-                Debug.Log($"{go.name}");
-                Linedrawer.AddPoint(go);
-            }
-        }
-
-        Linedrawer.points.Sort(Linedrawer.SortByName);
-
 
         Selection.selectionChanged += Repaint;
         SceneView.duringSceneGui += DuringSceneGUI;
@@ -122,6 +95,7 @@ public class WaypointTool : EditorWindow
             nodeComp.SetSphereRadius(waypointSphereRadius);
 
             Linedrawer.AddPoint(node);
+
         }
 
     }
@@ -144,6 +118,7 @@ public class WaypointTool : EditorWindow
         foreach (GameObject go in Selection.gameObjects)
         {
             Linedrawer.RemovePoint(go);
+            Undo.DestroyObjectImmediate(go);
             EditorApplication.delayCall += () => DestroyImmediate(go);
         }
 
